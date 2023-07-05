@@ -45,7 +45,7 @@ java {
 
 application {
     // Define the main class for the application.
-    mainClass.set("be.zvz.papagodeepl.AppKt")
+    mainClass.set("be.zvz.papagodeepl.ApplicationKt")
 }
 
 tasks.named<Test>("test") {
