@@ -14,7 +14,7 @@ plugins {
     application
 }
 
-val ktorVersion = "2.3.2"
+val ktorVersion = "2.3.3"
 val logbackVersion = "1.2.11"
 
 repositories {
