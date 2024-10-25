@@ -15,7 +15,7 @@ plugins {
 }
 
 val ktorVersion = "2.3.6"
-val logbackVersion = "1.4.11"
+val logbackVersion = "1.5.12"
 
 repositories {
     // Use Maven Central for resolving dependencies.
