@@ -8,7 +8,7 @@
 plugins {
     // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
     id("org.jetbrains.kotlin.jvm") version "1.9.20"
-    id("io.ktor.plugin") version "2.3.6"
+    id("io.ktor.plugin") version "2.3.13"
 
     // Apply the application plugin to add support for building a CLI application in Java.
     application
