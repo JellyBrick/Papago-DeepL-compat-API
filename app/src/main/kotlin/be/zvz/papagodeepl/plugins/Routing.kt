@@ -36,30 +36,36 @@ object Routing {
                 post {
                     val sysKey = System.getenv("TRANSLATE_SERVER_AUTH_KEY")
                     val params = call.receiveParameters()
-                    if (call.request.headers["Authorization"] == "DeepL-Auth-Key " + sysKey || params["auth_key"] == sysKey) {
-                        val text = params["text"] ?: return@post
-                        val targetLangObject: Language = when ((params["target_lang"] ?: return@post).lowercase()) {
-                            "en", "en-us", "en-gb" -> Language.ENGLISH
-                            "ko" -> Language.KOREAN
-                            "ja" -> Language.JAPANESE
-                            "zh", "zh-tw", "zh-cn" -> Language.SIMPLIFIED_CHINESE
-                            "es" -> Language.SPANISH
-                            "fr" -> Language.FRENCH
-                            "de" -> Language.DUTCH
-                            "ru" -> Language.RUSSIAN
-                            "pt", "pt-br", "pt-pt" -> Language.PORTUGUESE
-                            "it" -> Language.ITALIAN
-                            "vi" -> Language.VIETNAMESE
-                            "th" -> Language.THAI
-                            "id" -> Language.INDONESIAN
-                            "hi" -> Language.HINDI
-                            else -> {
-                                call.respond(
-                                    HttpStatusCode.BadRequest,
-                                )
-                                return@post
-                            }
+                    if (call.request.headers["Authorization"] != "DeepL-Auth-Key " + sysKey && params["auth_key"] != sysKey) {
+                        call.respond(
+                            HttpStatusCode.Unauthorized,
+                        )
+                        return@post
+                    }
+                    val result = mutableListOf<DeepLResponse.TranslationResult>()
+                    val targetLangObject: Language = when ((params["target_lang"] ?: return@post).lowercase()) {
+                        "en", "en-us", "en-gb" -> Language.ENGLISH
+                        "ko" -> Language.KOREAN
+                        "ja" -> Language.JAPANESE
+                        "zh", "zh-tw", "zh-cn" -> Language.SIMPLIFIED_CHINESE
+                        "es" -> Language.SPANISH
+                        "fr" -> Language.FRENCH
+                        "de" -> Language.DUTCH
+                        "ru" -> Language.RUSSIAN
+                        "pt", "pt-br", "pt-pt" -> Language.PORTUGUESE
+                        "it" -> Language.ITALIAN
+                        "vi" -> Language.VIETNAMESE
+                        "th" -> Language.THAI
+                        "id" -> Language.INDONESIAN
+                        "hi" -> Language.HINDI
+                        else -> {
+                            call.respond(
+                                HttpStatusCode.BadRequest,
+                            )
+                            return@post
                         }
+                    }
+                    params.getAll("text")?.forEach { text ->
                         try {
                             val response = papago.translate(
                                 language = LanguageSetting(source = Language.AUTO, target = targetLangObject),
@@ -68,32 +74,38 @@ object Routing {
                                 enableDictionary = false,
                             )
                             if (response.message == null) {
-                                call.respond(
-                                    HttpStatusCode.InternalServerError,
-                                )
-                                return@post
-                            }
-                            call.respond<DeepLResponse>(
-                                message = DeepLResponse(
-                                    translations = listOf(
-                                        element = DeepLResponse.TranslationResult(
-                                            detectedSourceLanguage = response.message!!.result.sourceLanguageType.uppercase(),
-                                            text = response.message!!.result.translatedText,
-                                        ),
+                                result.add(
+                                    DeepLResponse.TranslationResult(
+                                        detectedSourceLanguage = "EN",
+                                        text = "",
                                     ),
-                                ),
-                            )
+                                )
+                            } else {
+                                result.add(
+                                    DeepLResponse.TranslationResult(
+                                        detectedSourceLanguage = response.message!!.result.sourceLanguageType.uppercase(),
+                                        text = response.message!!.result.translatedText,
+                                    ),
+                                )
+                            }
                         } catch (e: IOException) {
                             call.respond(
                                 HttpStatusCode.InternalServerError,
                             )
                             return@post
                         }
-                    } else {
-                        call.respond(
-                            HttpStatusCode.Unauthorized,
-                        )
                     }
+                    if (result.isEmpty()) {
+                        call.respond(
+                            HttpStatusCode.InternalServerError,
+                        )
+                        return@post
+                    }
+                    call.respond<DeepLResponse>(
+                            message = DeepLResponse(
+                                translations = result,
+                            ),
+                    )
                 }
             }
         }
