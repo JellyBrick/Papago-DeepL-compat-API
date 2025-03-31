@@ -34,8 +34,9 @@ object Routing {
         routing {
             route("/v2/translate") {
                 post {
+                    val sysKey = System.getenv("TRANSLATE_SERVER_AUTH_KEY")
                     val params = call.receiveParameters()
-                    if (params["auth_key"] == System.getenv("TRANSLATE_SERVER_AUTH_KEY")) {
+                    if (call.request.headers["Authorization"] == "DeepL-Auth-Key " + sysKey || params["auth_key"] == sysKey) {
                         val text = params["text"] ?: return@post
                         val targetLangObject: Language = when ((params["target_lang"] ?: return@post).lowercase()) {
                             "en", "en-us", "en-gb" -> Language.ENGLISH
