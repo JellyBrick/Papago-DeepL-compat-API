@@ -32,7 +32,7 @@ dependencies {
     implementation("io.ktor:ktor-server-netty-jvm:$ktorVersion")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("com.fasterxml.jackson.module:jackson-module-blackbird:2.15.3")
-    implementation("com.squareup.okhttp3:okhttp-brotli:5.0.0-alpha.11")
+    implementation("com.squareup.okhttp3:okhttp-brotli:5.0.0-alpha.16")
     implementation("com.github.JellyBrick:Clova-kt:2.0.10")
 }
 
